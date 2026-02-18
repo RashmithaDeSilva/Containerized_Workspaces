@@ -84,6 +84,8 @@ All containers share the `./workspaces/download` directory.
 
 4. <b>Security:</b> The 127.0.0.1 binding in the ports section ensures these services are only accessible from your local machine, not the open internet.
 
+---
+
 # Setup git inside vscode
 
 ```bash
