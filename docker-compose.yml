@@ -1,0 +1,107 @@
+services:
+  # --- BROWSER WORKSPACE ---
+  firefox:
+    image: lscr.io/linuxserver/firefox:latest
+    container_name: firefox
+    profiles: ["firefox"]
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID:-1000} # User ID
+      - PGID=${PGID:-1000} # Group ID
+      - TZ=${TZ:-UTC} # Local timezone
+    volumes:
+      - ./workspaces/firefox-config:/config # Stores Firefox profile and settings
+      - ./workspaces/download:/downloads
+    networks:
+      ice_network:
+        ipv4_address: 172.20.0.10 # Fixed IP address
+    ports:
+      - '127.0.0.1:3000:3000' # HTTP Web UI
+      # - '127.0.0.1:3001:3001' # HTTPS Web UI
+    shm_size: "1gb" # Prevents browser crashes (essential for Firefox)
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+  # --- VS CODE WORKSPACE ---
+  vs-code:
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: vscode
+    profiles: ["vscode"]
+    restart: unless-stopped
+    environment:
+      # specific user/group IDs to match host (optional, prevents permission issues)
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-UTC}
+      # Password setup
+      - PASSWORD=${VSCODE_PASSWORD}
+      - SUDO_PASSWORD=${VSCODE_SUDO_PASSWORD}
+      # Other
+      - DEFAULT_WORKSPACE=${VSCODE_DEFAULT_WORKSPACE}
+      - PWA_APPNAME=${VSCODE_PWA_APPNAME}
+    volumes:
+      # Mount project directory
+      - ./workspaces/vscode-config:/config
+      - ./workspaces/download:/downloads
+      # Allows docker commands INSIDE the container
+      # - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "127.0.0.1:8443:8443"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    networks:
+      ice_network:
+        ipv4_address: 172.20.0.11
+
+  # --- PYTHON WORKSPACE ---
+  python-workspace:
+    image: python:3.11-slim
+    container_name: python-workspace
+    profiles: ["python"]
+    stdin_open: true
+    tty: true
+    ports:
+      - '127.0.0.1:5000:5000'
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    volumes:
+      - ./workspaces/python:/home
+      - ./workspaces/download:/downloads
+    networks:
+      ice_network:
+        ipv4_address: 172.20.0.12
+    working_dir: /home
+
+  # --- GO WORKSPACE ---
+  go-workspace:
+    image: golang:1.21-bullseye
+    container_name: go-workspace
+    profiles: ["go"]
+    stdin_open: true
+    tty: true
+    ports:
+      - '127.0.0.1:5500:5000'
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    volumes:
+      - ./workspaces/go:/home
+      - ./workspaces/download:/downloads
+    networks:
+      ice_network:
+        ipv4_address: 172.20.0.13
+    working_dir: /home
+
+networks:
+  ice_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
