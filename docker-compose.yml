@@ -1,4 +1,18 @@
 services:
+  # --- TOR PROXY ---
+  tor-proxy:
+    image: dperson/torproxy
+    container_name: tor-proxy
+    profiles: ["torproxy"]
+    restart: always
+    networks:
+      ice_network:
+        ipv4_address: 172.20.0.5 # SOCKS5 is on 9050, HTTP is on 8118
+    deploy:
+      resources:
+        limits:
+          memory: 256MB
+
   # --- BROWSER WORKSPACE ---
   firefox:
     image: lscr.io/linuxserver/firefox:latest
@@ -9,6 +23,10 @@ services:
       - PUID=${PUID:-1000} # User ID
       - PGID=${PGID:-1000} # Group ID
       - TZ=${TZ:-UTC} # Local timezone
+      # Tor proxy
+      - HTTP_PROXY=${TOR_URL:-}
+      - HTTPS_PROXY=${TOR_URL:-}
+      - ALL_PROXY=${TOR_SOCKS_URL:-}
     volumes:
       - ./workspaces/firefox-config:/config # Stores Firefox profile and settings
       - ./workspaces/download:/downloads
@@ -41,6 +59,10 @@ services:
       # Other
       - DEFAULT_WORKSPACE=${VSCODE_DEFAULT_WORKSPACE}
       - PWA_APPNAME=${VSCODE_PWA_APPNAME}
+      # Tor proxy
+      - HTTP_PROXY=${TOR_URL:-}
+      - HTTPS_PROXY=${TOR_URL:-}
+      - ALL_PROXY=${TOR_SOCKS_URL:-}
     volumes:
       # Mount project directory
       - ./workspaces/vscode-config:/config
