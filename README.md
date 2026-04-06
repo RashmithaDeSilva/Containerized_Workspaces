@@ -105,6 +105,18 @@ All containers share the `./workspaces/download` directory.
 
 ---
 
+## 🔌 Install VS Code Extensions
+
+You can install any VS Code extension you need using this automated script provided in `install_vscode_extensions.sh`. Simply add or remove any extension in the script and run it to automate your installation process.
+
+Run this script using this command and before tha updata system
+```sh
+sudo apt update && sudo apt upgrade -y
+bash ./install_vscode_extensions.sh
+```
+
+---
+
 ## ⚙️ Setup Git inside VS Code
 
 Open the VS Code terminal inside the container and run:
